@@ -31,8 +31,10 @@ class JewelryRender:
                 # 1 turn (with gravi)
                 __class__.cameras_1turn = JewelryRenderOptions.cameraslist.copy()
                 # 2 turn (without gravi)
-                if JewelryRenderOptions.options['gravi_mesh_name'] in bpy.data.objects.keys():
+                if __class__.getgravimesh():
                     __class__.cameras_2turn = JewelryRenderOptions.cameraslist.copy()
+                else:
+                    print('Warning - no gravi mesh found', bpy.data.objects.keys())
                 __class__.render(context)
             else:
                 print('Error - no meshes in obj ')
@@ -86,12 +88,31 @@ class JewelryRender:
                                  axis=(0, 0, 1),
                                  constraint_orientation='LOCAL')
     @staticmethod
+    def getgravimesh():
+        gravimesh = [gravi for gravi in bpy.data.objects.keys() if JewelryRenderOptions.options['gravi_mesh_name'] in gravi]
+        if gravimesh:
+            return bpy.data.objects[gravimesh[0]]
+        else:
+            return None
+
+    @staticmethod
     def removegravi():
-        if JewelryRenderOptions.options['gravi_mesh_name'] in bpy.data.objects.keys():
-            bpy.data.objects.remove(bpy.data.objects[JewelryRenderOptions.options['gravi_mesh_name']], True)
-            for ob in __class__.obj:
-                if ob.name == JewelryRenderOptions.options['gravi_mesh_name']:
-                    __class__.obj.remove(ob)
+        gravimesh = __class__.getgravimesh()
+        if gravimesh:
+            # v1 - remove the whole mesh
+            # bpy.data.objects.remove(gravimesh, True)
+            # for ob in __class__.obj:
+            #     if JewelryRenderOptions.options['gravi_mesh_name'] in ob.name:
+            #         __class__.obj.remove(ob)
+
+            # v2 - change material - set material with texture
+            gravimesh.data.materials[0] = bpy.data.materials[JewelryRenderOptions.options['gravimat']]
+            # change texture to last (max name.00x number)
+            gravitextures = [texture for texture in bpy.data.images.keys() if JewelryRenderOptions.options['gravitextureid'] in texture]
+            lastgravitexture = sorted(gravitextures, reverse=True)[0]
+            gravimesh.data.materials[0].node_tree.nodes['Gravi_text'].image = bpy.data.images[lastgravitexture]
+        else:
+            print('Error - no gravi mesh found to remove', bpy.data.objects.keys())
 
     @staticmethod
     def selectobj():
@@ -197,10 +218,10 @@ class JewelryRender:
         if os.path.exists(JewelryRenderOptions.options['dest_dir']):
             path = JewelryRenderOptions.options['dest_dir'] + os.sep + os.path.splitext(__class__.objname)[0]   # dir + filename
             for mesh in __class__.obj:
-                if mesh.name != JewelryRenderOptions.options['gravi_mesh_name']:
+                if JewelryRenderOptions.options['gravi_mesh_name'] not in mesh.name:
                     path += '_' + mesh.data.materials[0].name[:JewelryRenderOptions.materialidlength]   # + mat
             path += '_' + camera.name     # + camera
-            if JewelryRenderOptions.options['gravi_mesh_name'] not in bpy.data.objects.keys():
+            if not __class__.getgravimesh():
                 path += '_noeng'
             path += '.jpg'
             for currentarea in bpy.context.window_manager.windows[0].screen.areas:
