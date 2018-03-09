@@ -40,6 +40,7 @@ class JewelryRender:
                 print('Error - no meshes in obj ')
                 __class__.processobjlist(context)  # process next obj
         else:
+            __class__.clear()
             print('-- FINISHED --')
 
 
