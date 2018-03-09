@@ -60,7 +60,8 @@ class JewelryRender:
         # set materials to current obj
         if __class__.obj:
             for mesh in __class__.obj:
-                materialid = mesh.data.materials[0].name[:JewelryRenderOptions.materialidlength]
+                # materialid = mesh.data.materials[0].name[:JewelryRenderOptions.materialidlength]
+                materialid = mesh.name[:JewelryRenderOptions.materialidlength]
                 for material in JewelryRenderOptions.materialslist:
                     if material.name[:JewelryRenderOptions.materialidlength] == materialid:
                         mesh.data.materials[0] = material
