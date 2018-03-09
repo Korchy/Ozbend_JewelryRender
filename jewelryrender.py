@@ -64,7 +64,10 @@ class JewelryRender:
                 materialid = mesh.name[:JewelryRenderOptions.materialidlength]
                 for material in JewelryRenderOptions.materialslist:
                     if material.name[:JewelryRenderOptions.materialidlength] == materialid:
-                        mesh.data.materials[0] = material
+                        if mesh.data.materials:
+                            mesh.data.materials[0] = material
+                        else:
+                            mesh.data.materials.append(material)
 
     @staticmethod
     def transformobj(context):
