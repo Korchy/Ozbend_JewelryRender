@@ -100,17 +100,17 @@ class JewelryRender:
         gravimesh = __class__.getgravimesh()
         if gravimesh:
             # v1 - remove the whole mesh
-            # bpy.data.objects.remove(gravimesh, True)
-            # for ob in __class__.obj:
-            #     if JewelryRenderOptions.options['gravi_mesh_name'] in ob.name:
-            #         __class__.obj.remove(ob)
+            bpy.data.objects.remove(gravimesh, True)
+            for ob in __class__.obj:
+                if JewelryRenderOptions.options['gravi_mesh_name'] in ob.name:
+                    __class__.obj.remove(ob)
 
-            # v2 - change material - set material with texture
-            gravimesh.data.materials[0] = bpy.data.materials[JewelryRenderOptions.options['gravimat']]
-            # change texture to last (max name.00x number)
-            gravitextures = [texture for texture in bpy.data.images.keys() if JewelryRenderOptions.options['gravitextureid'] in texture]
-            lastgravitexture = sorted(gravitextures, reverse=True)[0]
-            gravimesh.data.materials[0].node_tree.nodes['Gravi_text'].image = bpy.data.images[lastgravitexture]
+            # # v2 - change material - set material with texture
+            # gravimesh.data.materials[0] = bpy.data.materials[JewelryRenderOptions.options['gravimat']]
+            # # change texture to last (max name.00x number)
+            # gravitextures = [texture for texture in bpy.data.images.keys() if JewelryRenderOptions.options['gravitextureid'] in texture]
+            # lastgravitexture = sorted(gravitextures, reverse=True)[0]
+            # gravimesh.data.materials[0].node_tree.nodes['Gravi_text'].image = bpy.data.images[lastgravitexture]
         else:
             print('Error - no gravi mesh found to remove', bpy.data.objects.keys())
 
