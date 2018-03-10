@@ -15,6 +15,7 @@ class JewelryRender:
 
     objname = ''    # Name of current imported obj file
     obj = []    # list of current obj meshes
+    turn = 1
     cameras_1turn = []    # current working cameras list for 1 turn
     cameras_2turn = []    # current working cameras list for 1 turn
 
@@ -63,7 +64,9 @@ class JewelryRender:
             for mesh in __class__.obj:
                 # materialid = mesh.data.materials[0].name[:JewelryRenderOptions.materialidlength]  # by obj material name
                 materialid = mesh.name[:JewelryRenderOptions.materialidlength]  # by obj mesh name
-                for material in JewelryRenderOptions.materialslist:
+                if materialid == JewelryRenderOptions.options['gravi_mesh_name']:   # gravi mesh (name = 'GraviMet01')
+                    materialid = mesh.name[JewelryRenderOptions.materialidlength:][:JewelryRenderOptions.materialidlength]
+                for material in JewelryRenderOptions.materialslist:     # all other meshes
                     if material.name[:JewelryRenderOptions.materialidlength] == materialid:
                         if mesh.data.materials:
                             mesh.data.materials[0] = material
@@ -170,6 +173,7 @@ class JewelryRender:
                 bpy.app.handlers.scene_update_post.append(__class__.onsceneupdate)
         elif __class__.cameras_2turn:
             __class__.removegravi()
+            __class__.turn = 2
             context.scene.camera = __class__.cameras_2turn.pop()
             if __class__.onrenderfinished not in bpy.app.handlers.render_complete:
                 bpy.app.handlers.render_complete.append(__class__.onrenderfinished)
@@ -190,6 +194,7 @@ class JewelryRender:
         if __class__.obj:
             __class__.removeobj()
         __class__.obj = []
+        __class__.turn = 1
         __class__.cameras_1turn = []
         __class__.cameras_2turn = []
         if __class__.onrenderfinished in bpy.app.handlers.render_complete:
@@ -239,7 +244,7 @@ class JewelryRender:
                 if JewelryRenderOptions.options['gravi_mesh_name'] not in mesh.name:
                     path += '_' + mesh.data.materials[0].name[:JewelryRenderOptions.materialidlength]   # + mat
             path += '_' + camera.name     # + camera
-            if __class__.cameras_1turn:
+            if __class__.turn == 1:
                 path += '_noeng'
             path += '.jpg'
             for currentarea in bpy.context.window_manager.windows[0].screen.areas:
