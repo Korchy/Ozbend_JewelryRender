@@ -119,7 +119,7 @@ class JewelryRender:
             # else:
             #     gravimesh.data.materials.append(bpy.data.materials[JewelryRenderOptions.options['gravimat']])
 
-            # if exists copy with name_gravi - use it, else create and use it
+            # if exists copy with gravi_name - use it, else create and use it
             if gravimesh.data.materials and gravimesh.data.materials[0].use_fake_user:
                 matname_gravi = 'gravi_'+gravimesh.data.materials[0].name[:JewelryRenderOptions.materialidlength]
                 if matname_gravi not in bpy.data.materials.keys():
