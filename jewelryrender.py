@@ -104,7 +104,7 @@ class JewelryRender:
             return None
 
     @staticmethod
-    def removegravi():
+    def setgravi():
         gravimesh = __class__.getgravimesh()
         if gravimesh:
             # # v1 - remove the whole mesh
@@ -118,13 +118,23 @@ class JewelryRender:
             #     gravimesh.data.materials[0] = bpy.data.materials[JewelryRenderOptions.options['gravimat']]
             # else:
             #     gravimesh.data.materials.append(bpy.data.materials[JewelryRenderOptions.options['gravimat']])
-            # change texture for gravi mesh
-            texturename = os.path.splitext(__class__.objname)[0] + '.png'
-            bpy.data.images.load(os.path.join(JewelryRenderOptions.options['source_obj_dir'], texturename), check_existing=True)
-            gravimesh.data.materials[0].node_tree.nodes['Gravi_Text'].image = bpy.data.images[texturename]
-            input = gravimesh.data.materials[0].node_tree.nodes['Gravi_Mix'].inputs['Fac']
-            output = gravimesh.data.materials[0].node_tree.nodes['Gravi_Text'].outputs['Alpha']
-            gravimesh.data.materials[0].node_tree.links.new(output, input)
+
+            # if exists copy with name_gravi - use it, else create and use it
+            if gravimesh.data.materials and gravimesh.data.materials[0].use_fake_user:
+                matname_gravi = 'gravi_'+gravimesh.data.materials[0].name[:JewelryRenderOptions.materialidlength]
+                if matname_gravi not in bpy.data.materials.keys():
+                    mat_gravi = gravimesh.data.materials[0].copy()
+                    mat_gravi.name = matname_gravi
+                    input = mat_gravi.node_tree.nodes['Gravi_Mix'].inputs['Fac']
+                    output = mat_gravi.node_tree.nodes['Gravi_Text'].outputs['Alpha']
+                    mat_gravi.node_tree.links.new(output, input)
+                gravimesh.data.materials[0] = bpy.data.materials[matname_gravi]
+                # change texture for gravi mesh
+                # load texture mask
+                texturename = os.path.splitext(__class__.objname)[0] + '.png'
+                bpy.data.images.load(os.path.join(JewelryRenderOptions.options['source_obj_dir'], texturename), check_existing=True)
+                # set texture mask to gravi-mesh node tree and create links
+                gravimesh.data.materials[0].node_tree.nodes['Gravi_Text'].image = bpy.data.images[texturename]
         else:
             print('Error - no gravi mesh found to remove', bpy.data.objects.keys())
 
@@ -153,11 +163,6 @@ class JewelryRender:
         # remove obj meshes from scene
         if __class__.obj:
             for ob in __class__.obj:
-                # correct material if it was the gravi
-                if ob == __class__.getgravimesh():
-                    gravilink = [lnk for lnk in ob.data.materials[0].node_tree.links if lnk.from_node.name == 'Gravi_Text' and lnk.to_node.name == 'Gravi_Mix']
-                    if gravilink:
-                        ob.data.materials[0].node_tree.links.remove(gravilink[0])
                 bpy.data.objects.remove(ob, True)
 
     @staticmethod
@@ -172,7 +177,7 @@ class JewelryRender:
             if __class__.onsceneupdate not in bpy.app.handlers.scene_update_post:
                 bpy.app.handlers.scene_update_post.append(__class__.onsceneupdate)
         elif __class__.cameras_2turn:
-            __class__.removegravi()
+            __class__.setgravi()
             __class__.turn = 2
             context.scene.camera = __class__.cameras_2turn.pop()
             if __class__.onrenderfinished not in bpy.app.handlers.render_complete:

@@ -8,7 +8,7 @@ bl_info = {
     'name': 'JewelryRender',
     'category': 'Render',
     'author': 'Nikita Akimov',
-    'version': (1, 3, 0),
+    'version': (1, 4, 0),
     'blender': (2, 79, 0),
     'location': 'Properties window -> Render Panel > JewelryRender',
     'wiki_url': 'https://github.com/Korchy/Ozbend_JewelryRender',
