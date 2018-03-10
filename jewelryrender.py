@@ -117,7 +117,6 @@ class JewelryRender:
                 gravimesh.data.materials.append(bpy.data.materials[JewelryRenderOptions.options['gravimat']])
             # change texture for gravi mesh
             texturename = os.path.splitext(__class__.objname)[0] + '.png'
-            print(texturename)
             bpy.data.images.load(os.path.join(JewelryRenderOptions.options['source_obj_dir'], texturename), check_existing=True)
             gravimesh.data.materials[0].node_tree.nodes['Gravi_text'].image = bpy.data.images[texturename]
         else:
