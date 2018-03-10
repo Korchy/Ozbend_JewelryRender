@@ -111,14 +111,17 @@ class JewelryRender:
             #         __class__.obj.remove(ob)
 
             # v2 - change material - set material with texture
-            if gravimesh.data.materials:
-                gravimesh.data.materials[0] = bpy.data.materials[JewelryRenderOptions.options['gravimat']]
-            else:
-                gravimesh.data.materials.append(bpy.data.materials[JewelryRenderOptions.options['gravimat']])
+            # if gravimesh.data.materials:
+            #     gravimesh.data.materials[0] = bpy.data.materials[JewelryRenderOptions.options['gravimat']]
+            # else:
+            #     gravimesh.data.materials.append(bpy.data.materials[JewelryRenderOptions.options['gravimat']])
             # change texture for gravi mesh
             texturename = os.path.splitext(__class__.objname)[0] + '.png'
             bpy.data.images.load(os.path.join(JewelryRenderOptions.options['source_obj_dir'], texturename), check_existing=True)
-            gravimesh.data.materials[0].node_tree.nodes['Gravi_text'].image = bpy.data.images[texturename]
+            gravimesh.data.materials[0].node_tree.nodes['Gravi_Text'].image = bpy.data.images[texturename]
+            input = gravimesh.data.materials[0].node_tree.nodes['Gravi_Mix'].inputs['Fac']
+            output = gravimesh.data.materials[0].node_tree.nodes['Gravi_Text'].outputs['Alpha']
+            gravimesh.data.materials[0].node_tree.links.new(output, input)
         else:
             print('Error - no gravi mesh found to remove', bpy.data.objects.keys())
 
@@ -137,6 +140,8 @@ class JewelryRender:
                 os.rename(os.path.join(JewelryRenderOptions.options['source_obj_dir'], clearname + '.obj'), os.path.join(JewelryRenderOptions.options['rendered_obj_dir'], clearname + '.obj'))
             if os.path.exists(os.path.join(JewelryRenderOptions.options['source_obj_dir'], clearname + '.mtl')):
                 os.rename(os.path.join(JewelryRenderOptions.options['source_obj_dir'], clearname + '.mtl'), os.path.join(JewelryRenderOptions.options['rendered_obj_dir'], clearname + '.mtl'))
+            if os.path.exists(os.path.join(JewelryRenderOptions.options['source_obj_dir'], clearname + '.png')):
+                os.rename(os.path.join(JewelryRenderOptions.options['source_obj_dir'], clearname + '.png'), os.path.join(JewelryRenderOptions.options['rendered_obj_dir'], clearname + '.png'))
         else:
             print('Error - rendered obj directory not exists')
 
@@ -145,6 +150,11 @@ class JewelryRender:
         # remove obj meshes from scene
         if __class__.obj:
             for ob in __class__.obj:
+                # correct material if it was the gravi
+                if ob == __class__.getgravimesh():
+                    gravilink = [lnk for lnk in ob.data.materials[0].node_tree.links if lnk.from_node.name == 'Gravi_Text' and lnk.to_node.name == 'Gravi_Mix']
+                    if gravilink:
+                        ob.data.materials[0].node_tree.links.remove(gravilink[0])
                 bpy.data.objects.remove(ob, True)
 
     @staticmethod
@@ -229,7 +239,7 @@ class JewelryRender:
                 if JewelryRenderOptions.options['gravi_mesh_name'] not in mesh.name:
                     path += '_' + mesh.data.materials[0].name[:JewelryRenderOptions.materialidlength]   # + mat
             path += '_' + camera.name     # + camera
-            if not __class__.getgravimesh():
+            if __class__.cameras_1turn:
                 path += '_noeng'
             path += '.jpg'
             for currentarea in bpy.context.window_manager.windows[0].screen.areas:
